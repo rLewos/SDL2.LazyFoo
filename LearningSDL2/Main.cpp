@@ -1,6 +1,7 @@
 #include <iostream>
 #include <SDL.h>
 #include <SDL_image.h>
+#include <string>
 
 #include "WindowHardware.h"
 
@@ -32,7 +33,10 @@ int main(int argc, char* argv[])
 				// TODO: ERROR
 			}
 
-			SDL_Texture* image = LoadMedia("F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\assets\\texture.png");
+			// Set SDL_Renderer background color to white.
+			SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+
+			//SDL_Texture* image = LoadMedia("F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\assets\\texture.png");
 
 			bool quit = false;
 			SDL_Event e;
@@ -79,11 +83,14 @@ int main(int argc, char* argv[])
 					}
 				}
 
-
+				SDL_RenderClear(gRenderer);
+				//IMG_LoadTexture(gRenderer, "FILE_PATH");
+				//SDL_RenderCopy(gRenderer, image, nullptr, nullptr);
+				SDL_RenderPresent(gRenderer);
 			}
 
-			SDL_DestroyTexture(image);
-			image = nullptr;
+			/*SDL_DestroyTexture(image);
+			image = nullptr;*/
 		}
 		else
 		{
@@ -122,6 +129,7 @@ SDL_Texture* LoadMedia(const char* path)
 	}
 
 	SDL_Texture* texture = SDL_CreateTextureFromSurface(gRenderer, image);
+	
 	if (texture == nullptr)
 	{
 		std::string error = "Could create texture: ";

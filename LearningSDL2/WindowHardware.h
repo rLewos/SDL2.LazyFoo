@@ -4,15 +4,15 @@
 class WindowHardware
 {
 private:
-								SDL_Window* window;
-								SDL_Renderer* renderer;
-								int xWindowSize;
-								int yWindowSize;
+	SDL_Window* m_window;
+	SDL_Renderer* m_renderer;
+	int m_xWindowSize;
+	int m_yWindowSize;
 
 public:
-								WindowHardware(int xWindowSize, int yWindowSize);
-								~WindowHardware();
+	WindowHardware(int xWindowSize, int yWindowSize);
+	~WindowHardware();
 
-								void Init();
+	void Init();
 };
 
