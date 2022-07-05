@@ -4,12 +4,15 @@
 #include <string>
 
 #include "WindowHardware.h"
+#include "LTexture.h"
 
 SDL_Window* gWindow = nullptr;
 SDL_Renderer* gRenderer = nullptr;
+LTexture gFooTexture;
+LTexture gBackgroundTexture;
 
 SDL_Texture* LoadMedia(const char* path);
-void KeyboardCommands();
+void close();
 
 int main(int argc, char* argv[])
 {
@@ -36,10 +39,11 @@ int main(int argc, char* argv[])
 			// Set SDL_Renderer background color to white.
 			SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 
-			SDL_Texture* image = LoadMedia("F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\assets\\viewport.png");
-
 			bool quit = false;
 			SDL_Event e;
+
+			gFooTexture.loadFromFile(gRenderer, "F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\assets\\foo.png");
+			gBackgroundTexture.loadFromFile(gRenderer, "F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\assets\\background.png");
 
 			while (!quit)
 			{
@@ -83,39 +87,16 @@ int main(int argc, char* argv[])
 					}
 				}
 				
-				SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+				SDL_SetRenderDrawColor(gRenderer , 0xFF, 0xFF, 0xFF, 0xFF);
 				SDL_RenderClear(gRenderer);
 
-				SDL_Rect topLeftViewPort = { 0x0, 0x0, xWindow/2, yWindow/2};
-				SDL_RenderSetViewport(gRenderer, &topLeftViewPort);
+				gBackgroundTexture.render(gRenderer, 0, 0);
+				gFooTexture.render(gRenderer, 240, 190);
 
-				// All changes after topLeft will draw on same viewport
-				SDL_RenderCopy(gRenderer, image, nullptr, nullptr);
-
-				SDL_Rect topRightViewport = { xWindow/2 , 0x0, xWindow /2, yWindow/2};
-				SDL_RenderSetViewport(gRenderer, &topRightViewport);
-
-				// All changes after topRight will draw on same viewport
-				SDL_RenderCopy(gRenderer, image, nullptr, nullptr);
-
-				SDL_Rect bottomViewport = { 0x0, yWindow / 2, xWindow, yWindow / 2 };
-				SDL_RenderSetViewport(gRenderer, &bottomViewport);
-
-				// All changes after topRight will draw on same viewport
-				SDL_RenderCopy(gRenderer, image, nullptr, nullptr);
-
-
-				//SDL_Rect rect = { xWindow/2, yWindow/2, xWindow/3, yWindow/3 };
-				//SDL_SetRenderDrawColor(gRenderer, 0xFF, 0,0,0xFF);
-				//SDL_RenderFillRect(gRenderer, &rect);
-				//IMG_LoadTexture(gRenderer, "FILE_PATH");
-
-				//SDL_RenderCopy(gRenderer, image, nullptr, nullptr);
 				SDL_RenderPresent(gRenderer);
 			}
 
-			SDL_DestroyTexture(image);
-			image = nullptr;
+			
 		}
 		else
 		{
@@ -130,14 +111,23 @@ int main(int argc, char* argv[])
 
 	}
 
+	close();
+
+	return 0;
+}
+
+void close() {
+
+	gBackgroundTexture.free();
+	gFooTexture.free();
+
 	SDL_DestroyRenderer(gRenderer);
 	SDL_DestroyWindow(gWindow);
 	gWindow = nullptr;
 	gRenderer = nullptr;
 
+	IMG_Quit();
 	SDL_Quit();
-
-	return 0;
 }
 
 
