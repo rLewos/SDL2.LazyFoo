@@ -9,8 +9,7 @@
 SDL_Window* gWindow = nullptr;
 SDL_Renderer* gRenderer = nullptr;
 
-SDL_Rect gSpriteClips[4];
-LTexture gSpriteSheetTexture;
+LTexture colorModulation;
 
 
 bool LoadMedia(const char* path);
@@ -41,10 +40,14 @@ int main(int argc, char* argv[])
 			// Set SDL_Renderer background color to white.
 			SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 
-			LoadMedia("F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\assets\\sprites.png");
+			LoadMedia("F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\assets\\full.png");
 
 			bool quit = false;
 			SDL_Event e;
+
+			Uint8 red = 255;
+			Uint8 green = 255;
+			Uint8 blue = 255;
 
 			while (!quit)
 			{
@@ -59,23 +62,28 @@ int main(int argc, char* argv[])
 					case SDL_KEYDOWN:
 						switch (e.key.keysym.sym)
 						{
-						case SDLK_1:
-							std::cout << "1" << "\n";
-							break;
-						case SDLK_UP:
-							std::cout << "UP" << "\n";
+						case SDLK_q:
+							red += 32;
 							break;
 
-						case SDLK_DOWN:
-							std::cout << "DOWN" << "\n";
+						case SDLK_w:
+							green += 32;
 							break;
 
-						case SDLK_RIGHT:
-							std::cout << "RIGHT" << "\n";
+						case SDLK_e:
+							blue += 32;
 							break;
 
-						case SDLK_LEFT:
-							std::cout << "LEFT" << "\n";
+						case SDLK_a:
+							red -= 32;
+							break;
+
+						case SDLK_s:
+							green -= 32;
+							break;
+
+						case SDLK_d:
+							blue -= 32;
 							break;
 
 						default:
@@ -88,13 +96,11 @@ int main(int argc, char* argv[])
 					}
 				}
 				
-				SDL_SetRenderDrawColor(gRenderer , 0xFF, 0xFF, 0xFF, 0xFF);
+				SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 				SDL_RenderClear(gRenderer);
-
-				gSpriteSheetTexture.render(gRenderer, 0,0, &gSpriteClips[0]);
-				gSpriteSheetTexture.render(gRenderer, xWindow - gSpriteClips[1].w, 0, &gSpriteClips[1]);
-				gSpriteSheetTexture.render(gRenderer, 0, yWindow - gSpriteClips[2].h, &gSpriteClips[2]);
-				gSpriteSheetTexture.render(gRenderer, xWindow - gSpriteClips[3].w, yWindow - gSpriteClips[3].h, &gSpriteClips[3]);
+				
+				colorModulation.setColor(red, green, blue);
+				colorModulation.render(gRenderer, 0, 0);
 
 				SDL_RenderPresent(gRenderer);
 			}
@@ -135,33 +141,14 @@ bool LoadMedia(const char* path)
 {
 	bool sucess = true;
 
-	if (!gSpriteSheetTexture.loadFromFile(gRenderer, path))
+	if (!colorModulation.loadFromFile(gRenderer, path))
 	{
 		printf("Failed to load texture!\n");
 		sucess = false;
 	}
 	else 
 	{
-		gSpriteClips[0].x = 0;
-		gSpriteClips[0].y = 0;
-		gSpriteClips[0].w = 100;
-		gSpriteClips[0].h = 100;
-
-		gSpriteClips[1].x = 100;
-		gSpriteClips[1].y = 0;
-		gSpriteClips[1].w = 100;
-		gSpriteClips[1].h = 100;
-
-		gSpriteClips[2].x = 0;
-		gSpriteClips[2].y = 100;
-		gSpriteClips[2].w = 100;
-		gSpriteClips[2].h = 100;
-
-		gSpriteClips[3].x = 100;
-		gSpriteClips[3].y = 100;
-		gSpriteClips[3].w = 100;
-		gSpriteClips[3].h = 100;
-
+		
 	}
 
 	return sucess;
