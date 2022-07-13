@@ -4,12 +4,17 @@
 #include <string>
 
 #include "WindowHardware.h"
+#include "LTexture.h"
 
 SDL_Window* gWindow = nullptr;
 SDL_Renderer* gRenderer = nullptr;
 
-SDL_Texture* LoadMedia(const char* path);
-void KeyboardCommands();
+LTexture gModuledTexture;
+LTexture gBackgroundTexture;
+
+
+bool LoadMedia(const char* path);
+void close();
 
 int main(int argc, char* argv[])
 {
@@ -36,10 +41,12 @@ int main(int argc, char* argv[])
 			// Set SDL_Renderer background color to white.
 			SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 
-			SDL_Texture* image = LoadMedia("F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\assets\\viewport.png");
+			LoadMedia("F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\assets\\fadeout.png");
 
 			bool quit = false;
 			SDL_Event e;
+
+			Uint8 alpha = 255;
 
 			while (!quit)
 			{
@@ -54,23 +61,25 @@ int main(int argc, char* argv[])
 					case SDL_KEYDOWN:
 						switch (e.key.keysym.sym)
 						{
-						case SDLK_1:
-							std::cout << "1" << "\n";
-							break;
-						case SDLK_UP:
-							std::cout << "UP" << "\n";
-							break;
-
-						case SDLK_DOWN:
-							std::cout << "DOWN" << "\n";
-							break;
-
-						case SDLK_RIGHT:
-							std::cout << "RIGHT" << "\n";
+						case SDLK_w:
+							if (alpha + 32 > 255)
+							{
+								alpha = 255;
+							}
+							else
+							{
+								alpha += 32;
+							}
 							break;
 
-						case SDLK_LEFT:
-							std::cout << "LEFT" << "\n";
+						case SDLK_s:
+							if (alpha - 32 < 0)
+							{
+								alpha = 0;
+							}
+							else {
+								alpha -= 32;
+							}
 							break;
 
 						default:
@@ -86,36 +95,16 @@ int main(int argc, char* argv[])
 				SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 				SDL_RenderClear(gRenderer);
 
-				SDL_Rect topLeftViewPort = { 0x0, 0x0, xWindow/2, yWindow/2};
-				SDL_RenderSetViewport(gRenderer, &topLeftViewPort);
+				gBackgroundTexture.render(gRenderer, 0x0, 0x0);
+				
+				gModuledTexture.setAlpha(alpha);
+				gModuledTexture.render(gRenderer, 0x0, 0x0);
+				
 
-				// All changes after topLeft will draw on same viewport
-				SDL_RenderCopy(gRenderer, image, nullptr, nullptr);
-
-				SDL_Rect topRightViewport = { xWindow/2 , 0x0, xWindow /2, yWindow/2};
-				SDL_RenderSetViewport(gRenderer, &topRightViewport);
-
-				// All changes after topRight will draw on same viewport
-				SDL_RenderCopy(gRenderer, image, nullptr, nullptr);
-
-				SDL_Rect bottomViewport = { 0x0, yWindow / 2, xWindow, yWindow / 2 };
-				SDL_RenderSetViewport(gRenderer, &bottomViewport);
-
-				// All changes after topRight will draw on same viewport
-				SDL_RenderCopy(gRenderer, image, nullptr, nullptr);
-
-
-				//SDL_Rect rect = { xWindow/2, yWindow/2, xWindow/3, yWindow/3 };
-				//SDL_SetRenderDrawColor(gRenderer, 0xFF, 0,0,0xFF);
-				//SDL_RenderFillRect(gRenderer, &rect);
-				//IMG_LoadTexture(gRenderer, "FILE_PATH");
-
-				//SDL_RenderCopy(gRenderer, image, nullptr, nullptr);
 				SDL_RenderPresent(gRenderer);
 			}
 
-			SDL_DestroyTexture(image);
-			image = nullptr;
+			
 		}
 		else
 		{
@@ -130,40 +119,43 @@ int main(int argc, char* argv[])
 
 	}
 
+	close();
+
+	return 0;
+}
+
+void close() {
+
 	SDL_DestroyRenderer(gRenderer);
 	SDL_DestroyWindow(gWindow);
 	gWindow = nullptr;
 	gRenderer = nullptr;
 
+	IMG_Quit();
 	SDL_Quit();
-
-	return 0;
 }
 
 
-SDL_Texture* LoadMedia(const char* path)
+bool LoadMedia(const char* path)
 {
-	SDL_Surface* image = IMG_Load(path);
-	if (image == nullptr)
-	{
-		std::string error = "Could load surface image: ";
-		error.append(IMG_GetError());
-		std::cout << error << "\n";
+	bool sucess = true;
 
-		throw std::exception(error.c_str());
+	if (!gModuledTexture.loadFromFile(gRenderer, path))
+	{
+		printf("Failed to load texture!\n");
+		sucess = false;
+	}
+	else 
+	{
+		gModuledTexture.setBlendMode(SDL_BLENDMODE_BLEND);
 	}
 
-	SDL_Texture* texture = SDL_CreateTextureFromSurface(gRenderer, image);
-	
-	if (texture == nullptr)
-	{
-		std::string error = "Could create texture: ";
-		error.append(SDL_GetError());
-		std::cout << error << "\n";
 
-		throw std::exception(error.c_str());
+	if (!gBackgroundTexture.loadFromFile(gRenderer, "F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\assets\\fadein.png"))
+	{
+		printf("Failed to load texture!\n");
+		sucess = false;
 	}
 
-	SDL_FreeSurface(image);
-	return texture;
+	return sucess;
 }
