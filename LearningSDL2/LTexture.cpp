@@ -56,12 +56,6 @@ void LTexture::free()
 	}
 }
 
-//void LTexture::render(SDL_Renderer* renderer, int x, int y)
-//{
-//	SDL_Rect rect = { x, y, mWidth, mHeight };
-//	SDL_RenderCopy(renderer, mTexture, nullptr, &rect);
-//}
-
 void LTexture::render(SDL_Renderer* renderer, int x, int y, SDL_Rect* clip)
 {
 	SDL_Rect renderQuad = { x,y, mWidth, mHeight };
@@ -77,6 +71,16 @@ void LTexture::render(SDL_Renderer* renderer, int x, int y, SDL_Rect* clip)
 void LTexture::setColor(Uint8 red, Uint8 green, Uint8 blue)
 {
 	SDL_SetTextureColorMod(mTexture, red, green, blue);
+}
+
+void LTexture::setBlendMode(SDL_BlendMode blending)
+{
+	SDL_SetTextureBlendMode(mTexture, blending);
+}
+
+void LTexture::setAlpha(Uint8 alpha)
+{
+	SDL_SetTextureAlphaMod(mTexture, alpha);
 }
 
 int LTexture::getWidth()

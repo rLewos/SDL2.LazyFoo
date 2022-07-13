@@ -9,7 +9,8 @@
 SDL_Window* gWindow = nullptr;
 SDL_Renderer* gRenderer = nullptr;
 
-LTexture colorModulation;
+LTexture gModuledTexture;
+LTexture gBackgroundTexture;
 
 
 bool LoadMedia(const char* path);
@@ -40,14 +41,12 @@ int main(int argc, char* argv[])
 			// Set SDL_Renderer background color to white.
 			SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 
-			LoadMedia("F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\assets\\full.png");
+			LoadMedia("F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\assets\\fadeout.png");
 
 			bool quit = false;
 			SDL_Event e;
 
-			Uint8 red = 255;
-			Uint8 green = 255;
-			Uint8 blue = 255;
+			Uint8 alpha = 255;
 
 			while (!quit)
 			{
@@ -62,28 +61,25 @@ int main(int argc, char* argv[])
 					case SDL_KEYDOWN:
 						switch (e.key.keysym.sym)
 						{
-						case SDLK_q:
-							red += 32;
-							break;
-
 						case SDLK_w:
-							green += 32;
-							break;
-
-						case SDLK_e:
-							blue += 32;
-							break;
-
-						case SDLK_a:
-							red -= 32;
+							if (alpha + 32 > 255)
+							{
+								alpha = 255;
+							}
+							else
+							{
+								alpha += 32;
+							}
 							break;
 
 						case SDLK_s:
-							green -= 32;
-							break;
-
-						case SDLK_d:
-							blue -= 32;
+							if (alpha - 32 < 0)
+							{
+								alpha = 0;
+							}
+							else {
+								alpha -= 32;
+							}
 							break;
 
 						default:
@@ -98,9 +94,12 @@ int main(int argc, char* argv[])
 				
 				SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 				SDL_RenderClear(gRenderer);
+
+				gBackgroundTexture.render(gRenderer, 0x0, 0x0);
 				
-				colorModulation.setColor(red, green, blue);
-				colorModulation.render(gRenderer, 0, 0);
+				gModuledTexture.setAlpha(alpha);
+				gModuledTexture.render(gRenderer, 0x0, 0x0);
+				
 
 				SDL_RenderPresent(gRenderer);
 			}
@@ -141,14 +140,21 @@ bool LoadMedia(const char* path)
 {
 	bool sucess = true;
 
-	if (!colorModulation.loadFromFile(gRenderer, path))
+	if (!gModuledTexture.loadFromFile(gRenderer, path))
 	{
 		printf("Failed to load texture!\n");
 		sucess = false;
 	}
 	else 
 	{
-		
+		gModuledTexture.setBlendMode(SDL_BLENDMODE_BLEND);
+	}
+
+
+	if (!gBackgroundTexture.loadFromFile(gRenderer, "F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\assets\\fadein.png"))
+	{
+		printf("Failed to load texture!\n");
+		sucess = false;
 	}
 
 	return sucess;
