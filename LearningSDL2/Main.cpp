@@ -9,9 +9,9 @@
 SDL_Window* gWindow = nullptr;
 SDL_Renderer* gRenderer = nullptr;
 
-LTexture gModuledTexture;
-LTexture gBackgroundTexture;
-
+const int WALKING_FRAMES = 4;
+SDL_Rect gSpriteClipts[WALKING_FRAMES];
+LTexture gSpriteSheetTexture;
 
 bool LoadMedia(const char* path);
 void close();
@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
 				// TODO: ERROR
 			}
 
-			gRenderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_ACCELERATED);
+			gRenderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 			if (gRenderer == nullptr) {
 				// TODO: ERROR
 			}
@@ -41,12 +41,11 @@ int main(int argc, char* argv[])
 			// Set SDL_Renderer background color to white.
 			SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 
-			LoadMedia("F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\assets\\fadeout.png");
+			LoadMedia("F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\assets\\foo.png");
 
 			bool quit = false;
 			SDL_Event e;
-
-			Uint8 alpha = 255;
+			int frame = 0;
 
 			while (!quit)
 			{
@@ -61,29 +60,8 @@ int main(int argc, char* argv[])
 					case SDL_KEYDOWN:
 						switch (e.key.keysym.sym)
 						{
-						case SDLK_w:
-							if (alpha + 32 > 255)
-							{
-								alpha = 255;
-							}
-							else
-							{
-								alpha += 32;
-							}
-							break;
-
-						case SDLK_s:
-							if (alpha - 32 < 0)
-							{
-								alpha = 0;
-							}
-							else {
-								alpha -= 32;
-							}
-							break;
-
-						default:
-							break;
+						case SDLK_q:
+								break;
 						}
 						break;
 
@@ -95,13 +73,17 @@ int main(int argc, char* argv[])
 				SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 				SDL_RenderClear(gRenderer);
 
-				gBackgroundTexture.render(gRenderer, 0x0, 0x0);
-				
-				gModuledTexture.setAlpha(alpha);
-				gModuledTexture.render(gRenderer, 0x0, 0x0);
-				
+				SDL_Rect* currentClip = &gSpriteClipts[frame / 4];
+				gSpriteSheetTexture.render(gRenderer, (xWindow - currentClip->w) / 2, (yWindow - currentClip->h) / 2, currentClip);
 
 				SDL_RenderPresent(gRenderer);
+
+				++frame;
+
+				if ((frame/ 4 ) >= WALKING_FRAMES)
+				{
+					frame = 0;
+				}
 			}
 
 			
@@ -140,21 +122,32 @@ bool LoadMedia(const char* path)
 {
 	bool sucess = true;
 
-	if (!gModuledTexture.loadFromFile(gRenderer, path))
+	if (!gSpriteSheetTexture.loadFromFile(gRenderer, path))
 	{
 		printf("Failed to load texture!\n");
 		sucess = false;
 	}
 	else 
 	{
-		gModuledTexture.setBlendMode(SDL_BLENDMODE_BLEND);
-	}
+		gSpriteClipts[0].x = 0;
+		gSpriteClipts[0].y = 0;
+		gSpriteClipts[0].w = 64;
+		gSpriteClipts[0].h = 205;
 
+		gSpriteClipts[1].x = 64;
+		gSpriteClipts[1].y = 0;
+		gSpriteClipts[1].w = 64;
+		gSpriteClipts[1].h = 205;
 
-	if (!gBackgroundTexture.loadFromFile(gRenderer, "F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\assets\\fadein.png"))
-	{
-		printf("Failed to load texture!\n");
-		sucess = false;
+		gSpriteClipts[2].x = 128;
+		gSpriteClipts[2].y = 0;
+		gSpriteClipts[2].w = 64;
+		gSpriteClipts[2].h = 205;
+
+		gSpriteClipts[3].x = 192;
+		gSpriteClipts[3].y = 0;
+		gSpriteClipts[3].w = 64;
+		gSpriteClipts[3].h = 205;
 	}
 
 	return sucess;
