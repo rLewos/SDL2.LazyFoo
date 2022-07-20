@@ -9,9 +9,7 @@
 SDL_Window* gWindow = nullptr;
 SDL_Renderer* gRenderer = nullptr;
 
-const int WALKING_FRAMES = 4;
-SDL_Rect gSpriteClipts[WALKING_FRAMES];
-LTexture gSpriteSheetTexture;
+LTexture gArrowTexture;
 
 bool LoadMedia(const char* path);
 void close();
@@ -41,11 +39,13 @@ int main(int argc, char* argv[])
 			// Set SDL_Renderer background color to white.
 			SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 
-			LoadMedia("F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\assets\\foo.png");
+			LoadMedia("F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\assets\\arrow.png");
 
 			bool quit = false;
 			SDL_Event e;
-			int frame = 0;
+			
+			double degrees = 0.0;
+			SDL_RendererFlip flipType = SDL_FLIP_NONE;
 
 			while (!quit)
 			{
@@ -60,8 +60,26 @@ int main(int argc, char* argv[])
 					case SDL_KEYDOWN:
 						switch (e.key.keysym.sym)
 						{
+						
+						case SDLK_a:
+							degrees += 60;
+							break;
+
+						case SDLK_d:
+							degrees -= 60;
+							break;
+
 						case SDLK_q:
-								break;
+							flipType = SDL_FLIP_HORIZONTAL;
+							break;
+
+						case SDLK_w:
+							flipType = SDL_FLIP_NONE;
+							break;
+
+						case SDLK_e:
+							flipType = SDL_FLIP_VERTICAL;
+							break;
 						}
 						break;
 
@@ -73,17 +91,15 @@ int main(int argc, char* argv[])
 				SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 				SDL_RenderClear(gRenderer);
 
-				SDL_Rect* currentClip = &gSpriteClipts[frame / 4];
-				gSpriteSheetTexture.render(gRenderer, (xWindow - currentClip->w) / 2, (yWindow - currentClip->h) / 2, currentClip);
+				gArrowTexture.render(gRenderer,
+					(xWindow - gArrowTexture.getWidth()) / 2,
+					(yWindow - gArrowTexture.getHeight())/2,
+					nullptr,
+					degrees,
+					nullptr,
+					flipType);
 
 				SDL_RenderPresent(gRenderer);
-
-				++frame;
-
-				if ((frame/ 4 ) >= WALKING_FRAMES)
-				{
-					frame = 0;
-				}
 			}
 
 			
@@ -122,32 +138,14 @@ bool LoadMedia(const char* path)
 {
 	bool sucess = true;
 
-	if (!gSpriteSheetTexture.loadFromFile(gRenderer, path))
+	if (!gArrowTexture.loadFromFile(gRenderer, path))
 	{
 		printf("Failed to load texture!\n");
 		sucess = false;
 	}
 	else 
 	{
-		gSpriteClipts[0].x = 0;
-		gSpriteClipts[0].y = 0;
-		gSpriteClipts[0].w = 64;
-		gSpriteClipts[0].h = 205;
-
-		gSpriteClipts[1].x = 64;
-		gSpriteClipts[1].y = 0;
-		gSpriteClipts[1].w = 64;
-		gSpriteClipts[1].h = 205;
-
-		gSpriteClipts[2].x = 128;
-		gSpriteClipts[2].y = 0;
-		gSpriteClipts[2].w = 64;
-		gSpriteClipts[2].h = 205;
-
-		gSpriteClipts[3].x = 192;
-		gSpriteClipts[3].y = 0;
-		gSpriteClipts[3].w = 64;
-		gSpriteClipts[3].h = 205;
+		
 	}
 
 	return sucess;
