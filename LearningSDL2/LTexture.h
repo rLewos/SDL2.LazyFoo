@@ -1,8 +1,10 @@
 #pragma once
 #include <SDL.h>
-#include <string>
 #include <SDL_image.h>
+#include <SDL_ttf.h>
+#include <string>
 #include <iostream>
+#include <cmath>
 
 class LTexture
 {
@@ -16,6 +18,7 @@ public:
 	void setColor(Uint8 red, Uint8 green, Uint8 blue);
 	void setBlendMode(SDL_BlendMode blending);
 	void setAlpha(Uint8 alpha);
+	bool loadFromRenderedFont(SDL_Renderer* renderer, TTF_Font* font, const std::string textureText, SDL_Color color);
 	int getWidth();
 	int getHeight();
 

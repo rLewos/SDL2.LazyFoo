@@ -83,6 +83,34 @@ void LTexture::setAlpha(Uint8 alpha)
 	SDL_SetTextureAlphaMod(mTexture, alpha);
 }
 
+bool LTexture::loadFromRenderedFont(SDL_Renderer* renderer, TTF_Font* font, const std::string textureText, SDL_Color color)
+{
+	free();
+
+	SDL_Surface* surfaceFont = TTF_RenderText_Solid(font, textureText.c_str(), color);
+	if (surfaceFont == nullptr)
+	{
+		std::cout << "TTF Error: " << TTF_GetError() << "\n";
+	}
+	else
+	{
+		mTexture = SDL_CreateTextureFromSurface(renderer, surfaceFont);
+		if (mTexture == nullptr)
+		{
+			printf("Could not create texture: %s\n", SDL_GetError());
+		}
+		else
+		{
+			mWidth = surfaceFont->w;
+			mHeight = surfaceFont->h;
+		}
+
+		SDL_FreeSurface(surfaceFont);
+	}
+
+	return mTexture != nullptr;
+}
+
 int LTexture::getWidth()
 {
 	return mWidth;
