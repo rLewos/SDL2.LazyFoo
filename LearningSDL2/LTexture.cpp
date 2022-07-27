@@ -83,6 +83,7 @@ void LTexture::setAlpha(Uint8 alpha)
 	SDL_SetTextureAlphaMod(mTexture, alpha);
 }
 
+#if defined(SDL_TTF_MAJOR_VERSION)
 bool LTexture::loadFromRenderedFont(SDL_Renderer* renderer, TTF_Font* font, const std::string textureText, SDL_Color color)
 {
 	free();
@@ -110,6 +111,7 @@ bool LTexture::loadFromRenderedFont(SDL_Renderer* renderer, TTF_Font* font, cons
 
 	return mTexture != nullptr;
 }
+#endif
 
 int LTexture::getWidth()
 {
