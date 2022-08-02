@@ -1,6 +1,6 @@
 #pragma once
 #include <SDL.h>
-#include "LButtonSprite.h"
+#include "LButtonSpriteEnum.h"
 
 class LButton
 {
@@ -8,11 +8,11 @@ public:
 	LButton();
 	~LButton();
 	void setPosition(int x, int y);
-	void handleEvent(SDL_Event* e);
+	void handleEvent(SDL_Event* e, const int buttonWidth, const int buttonHeight);
 	void render();
 
 private:
 	SDL_Point mPosition;
-	LButtonSprite mCurrentSprite;
+	LButtonSpriteEnum mCurrentSprite;
 };
 

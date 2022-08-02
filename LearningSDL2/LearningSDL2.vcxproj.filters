@@ -38,7 +38,7 @@
     <ClInclude Include="LButton.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="LButtonSprite.h">
+    <ClInclude Include="LButtonSpriteEnum.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

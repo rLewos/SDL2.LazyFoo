@@ -1,5 +1,5 @@
 #pragma once
-enum class LButtonSprite {
+enum class LButtonSpriteEnum {
 	BUTTON_SPRITE_MOUSE_OUT,
 	BUTTON_SPRITE_MOUSE_OVER_MOTION,
 	BUTTON_SPRITE_MOUSE_DOWN,

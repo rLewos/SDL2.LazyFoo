@@ -16,15 +16,6 @@ const int BUTTON_WIDTH = 300;
 const int BUTTON_HEIGHT = 200;
 const int BUTTON_TOTAL = 4;
 
-//enum LButtonSprite {
-//	BUTTON_SPRITE_MOUSE_OUT,
-//	BUTTON_SPRITE_MOUSE_OVER_MOTION,
-//	BUTTON_SPRITE_MOUSE_DOWN,
-//	BUTTON_SPRITE_MOUSE_UP,
-//	BUTTON_SPRITE_MOUSE_TOTAL = 4
-//};
-
-
 bool LoadMedia(const char* path);
 void close();
 
