@@ -8,10 +8,13 @@
 
 SDL_Window* gWindow = nullptr;
 SDL_Renderer* gRenderer = nullptr;
+TTF_Font* gFont = nullptr;
 
-LTexture gModuledTexture;
-LTexture gBackgroundTexture;
+LTexture gTextureFont;
 
+const int BUTTON_WIDTH = 300;
+const int BUTTON_HEIGHT = 200;
+const int BUTTON_TOTAL = 4;
 
 bool LoadMedia(const char* path);
 void close();
@@ -23,6 +26,14 @@ int main(int argc, char* argv[])
 		WindowHardware* window = nullptr;
 
 		int statusCodeInit = SDL_Init(SDL_INIT_VIDEO);
+		int statusCodeTTFInit = TTF_Init();
+		
+		if (statusCodeTTFInit == -1)
+		{
+			printf("Could not initialize TTF: %s", TTF_GetError());
+		}
+
+
 		if (statusCodeInit == 0)
 		{
 			int xWindow = 1024;
@@ -33,7 +44,7 @@ int main(int argc, char* argv[])
 				// TODO: ERROR
 			}
 
-			gRenderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_ACCELERATED);
+			gRenderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 			if (gRenderer == nullptr) {
 				// TODO: ERROR
 			}
@@ -41,12 +52,10 @@ int main(int argc, char* argv[])
 			// Set SDL_Renderer background color to white.
 			SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 
-			LoadMedia("F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\assets\\fadeout.png");
+			LoadMedia("F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\fonts\\lazy.ttf");
 
 			bool quit = false;
 			SDL_Event e;
-
-			Uint8 alpha = 255;
 
 			while (!quit)
 			{
@@ -57,49 +66,13 @@ int main(int argc, char* argv[])
 					case SDL_QUIT:
 						quit = true;
 						break;
-
-					case SDL_KEYDOWN:
-						switch (e.key.keysym.sym)
-						{
-						case SDLK_w:
-							if (alpha + 32 > 255)
-							{
-								alpha = 255;
-							}
-							else
-							{
-								alpha += 32;
-							}
-							break;
-
-						case SDLK_s:
-							if (alpha - 32 < 0)
-							{
-								alpha = 0;
-							}
-							else {
-								alpha -= 32;
-							}
-							break;
-
-						default:
-							break;
-						}
-						break;
-
-					default:
-						break;
 					}
 				}
 				
 				SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 				SDL_RenderClear(gRenderer);
 
-				gBackgroundTexture.render(gRenderer, 0x0, 0x0);
-				
-				gModuledTexture.setAlpha(alpha);
-				gModuledTexture.render(gRenderer, 0x0, 0x0);
-				
+				gTextureFont.render(gRenderer, (xWindow - gTextureFont.getWidth()) / 2, (yWindow - gTextureFont.getHeight()) / 2);
 
 				SDL_RenderPresent(gRenderer);
 			}
@@ -126,11 +99,17 @@ int main(int argc, char* argv[])
 
 void close() {
 
+	gTextureFont.free();
+
+	TTF_CloseFont(gFont);
+	gFont = nullptr;
+
 	SDL_DestroyRenderer(gRenderer);
 	SDL_DestroyWindow(gWindow);
 	gWindow = nullptr;
 	gRenderer = nullptr;
 
+	TTF_Quit();
 	IMG_Quit();
 	SDL_Quit();
 }
@@ -140,22 +119,20 @@ bool LoadMedia(const char* path)
 {
 	bool sucess = true;
 
-	if (!gModuledTexture.loadFromFile(gRenderer, path))
+	gFont = TTF_OpenFont(path, 28);
+	if (gFont == nullptr)
 	{
-		printf("Failed to load texture!\n");
-		sucess = false;
+		printf("Could not load font: %s", TTF_GetError());
 	}
-	else 
+	else
 	{
-		gModuledTexture.setBlendMode(SDL_BLENDMODE_BLEND);
+		SDL_Color color = {0,0,0};
+		if (!gTextureFont.loadFromRenderedFont(gRenderer, gFont, "The quick brown fox jumps over the lazy dog", color))
+		{
+			printf("Could not load texture: %s", SDL_GetError());
+		}
 	}
-
-
-	if (!gBackgroundTexture.loadFromFile(gRenderer, "F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\assets\\fadein.png"))
-	{
-		printf("Failed to load texture!\n");
-		sucess = false;
-	}
+	
 
 	return sucess;
 }
