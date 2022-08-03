@@ -5,16 +5,21 @@
 
 #include "WindowHardware.h"
 #include "LTexture.h"
+#include "LButton.h"
+#include "LButtonSpriteEnum.h"
 
 SDL_Window* gWindow = nullptr;
 SDL_Renderer* gRenderer = nullptr;
 TTF_Font* gFont = nullptr;
 
-LTexture gTextureFont;
 
 const int BUTTON_WIDTH = 300;
 const int BUTTON_HEIGHT = 200;
 const int BUTTON_TOTAL = 4;
+
+SDL_Rect gSpriteClips[(int) LButtonSpriteEnum::BUTTON_SPRITE_MOUSE_TOTAL];
+LTexture gButtonSpriteSheetTexture;
+LButton gButtons[BUTTON_TOTAL];
 
 bool LoadMedia(const char* path);
 void close();
@@ -52,7 +57,7 @@ int main(int argc, char* argv[])
 			// Set SDL_Renderer background color to white.
 			SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 
-			LoadMedia("F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\fonts\\lazy.ttf");
+			LoadMedia("F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\assets\\button.png");
 
 			bool quit = false;
 			SDL_Event e;
@@ -61,18 +66,24 @@ int main(int argc, char* argv[])
 			{
 				while (SDL_PollEvent(&e) != 0)
 				{
-					switch (e.type)
+					if (e.type == SDL_QUIT)
 					{
-					case SDL_QUIT:
 						quit = true;
-						break;
+					}
+
+					for (int i = 0; i < BUTTON_TOTAL; ++i)
+					{
+						gButtons[i].handleEvent(&e, BUTTON_WIDTH, BUTTON_HEIGHT);
 					}
 				}
 				
 				SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 				SDL_RenderClear(gRenderer);
 
-				gTextureFont.render(gRenderer, (xWindow - gTextureFont.getWidth()) / 2, (yWindow - gTextureFont.getHeight()) / 2);
+				for (int i = 0; i < BUTTON_TOTAL; i++)
+				{
+					gButtons[i].render(gRenderer, &gButtonSpriteSheetTexture, &gSpriteClips[i]);
+				}
 
 				SDL_RenderPresent(gRenderer);
 			}
@@ -81,10 +92,7 @@ int main(int argc, char* argv[])
 		}
 		else
 		{
-			/*const char* error = "Could not initialize SDL2" + SDL_GetError();
-			std::cout << error << "\n";
-
-			throw std::exception(error);*/
+			
 		}
 	}
 	catch (const std::exception& e)
@@ -99,7 +107,7 @@ int main(int argc, char* argv[])
 
 void close() {
 
-	gTextureFont.free();
+	
 
 	TTF_CloseFont(gFont);
 	gFont = nullptr;
@@ -119,19 +127,7 @@ bool LoadMedia(const char* path)
 {
 	bool sucess = true;
 
-	gFont = TTF_OpenFont(path, 28);
-	if (gFont == nullptr)
-	{
-		printf("Could not load font: %s", TTF_GetError());
-	}
-	else
-	{
-		SDL_Color color = {0,0,0};
-		if (!gTextureFont.loadFromRenderedFont(gRenderer, gFont, "The quick brown fox jumps over the lazy dog", color))
-		{
-			printf("Could not load texture: %s", SDL_GetError());
-		}
-	}
+	gButtonSpriteSheetTexture.loadFromFile(gRenderer, path);
 	
 
 	return sucess;

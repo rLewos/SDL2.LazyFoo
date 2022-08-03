@@ -16,7 +16,7 @@ void LButton::setPosition(int x, int y)
 
 void LButton::handleEvent(SDL_Event* e, const int buttonWidth, const int buttonHeight)
 {
-	if (e->type == SDL_MOUSEMOTION || e->type == SDL_MOUSEBUTTONDOWN || e->type = SDL_MOUSEBUTTONUP)
+	if (e -> type == SDL_MOUSEMOTION || e->type == SDL_MOUSEBUTTONDOWN || e->type = SDL_MOUSEBUTTONUP)
 	{
 		// Get position where cursor is located.
 		int x = 0;
@@ -66,4 +66,9 @@ void LButton::handleEvent(SDL_Event* e, const int buttonWidth, const int buttonH
 			}
 		}
 	}
+}
+
+void LButton::render(SDL_Renderer* renderer, LTexture* texture, SDL_Rect* spritesheet)
+{
+	texture->render(renderer, mPosition.x, mPosition.y, spritesheet);
 }
