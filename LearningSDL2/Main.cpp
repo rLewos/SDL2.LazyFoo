@@ -5,19 +5,18 @@
 
 #include "WindowHardware.h"
 #include "LTexture.h"
+#include "LButton.h"
+#include "LButtonSpriteEnum.h"
 
 SDL_Window* gWindow = nullptr;
 SDL_Renderer* gRenderer = nullptr;
 TTF_Font* gFont = nullptr;
 
-LTexture gTextureFont;
-
-const int BUTTON_WIDTH = 300;
-const int BUTTON_HEIGHT = 200;
-const int BUTTON_TOTAL = 4;
-
 bool LoadMedia(const char* path);
 void close();
+LTexture gKeyboardTexture;
+LTexture gArraySides[4];
+
 
 int main(int argc, char* argv[])
 {
@@ -52,27 +51,53 @@ int main(int argc, char* argv[])
 			// Set SDL_Renderer background color to white.
 			SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 
-			LoadMedia("F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\fonts\\lazy.ttf");
+			LoadMedia("F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\assets\\preview.png");
 
 			bool quit = false;
 			SDL_Event e;
+
+			LTexture* currentTexture = nullptr;
+			SDL_Rect clip = { 0, 0, xWindow, yWindow };
 
 			while (!quit)
 			{
 				while (SDL_PollEvent(&e) != 0)
 				{
-					switch (e.type)
+					if (e.type == SDL_QUIT)
 					{
-					case SDL_QUIT:
 						quit = true;
-						break;
 					}
 				}
+
+				// Key States
+				const Uint8* currentKeyStates = SDL_GetKeyboardState(nullptr);
+				if (currentKeyStates[SDL_SCANCODE_UP])
+				{
+					currentTexture = &gArraySides[0];
+				}
+				else if (currentKeyStates[SDL_SCANCODE_DOWN])
+				{
+					currentTexture = &gArraySides[1];
+				}
+				else if (currentKeyStates[SDL_SCANCODE_LEFT])
+				{
+					currentTexture = &gArraySides[2];
+				}
+				else if (currentKeyStates[SDL_SCANCODE_RIGHT])
+				{
+					currentTexture = &gArraySides[3];
+				}
+				else 
+				{
+					currentTexture = &gKeyboardTexture;
+				}
+
+
 				
 				SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 				SDL_RenderClear(gRenderer);
 
-				gTextureFont.render(gRenderer, (xWindow - gTextureFont.getWidth()) / 2, (yWindow - gTextureFont.getHeight()) / 2);
+				currentTexture->render(gRenderer, 0, 0, &clip);
 
 				SDL_RenderPresent(gRenderer);
 			}
@@ -81,10 +106,7 @@ int main(int argc, char* argv[])
 		}
 		else
 		{
-			/*const char* error = "Could not initialize SDL2" + SDL_GetError();
-			std::cout << error << "\n";
-
-			throw std::exception(error);*/
+			
 		}
 	}
 	catch (const std::exception& e)
@@ -98,9 +120,6 @@ int main(int argc, char* argv[])
 }
 
 void close() {
-
-	gTextureFont.free();
-
 	TTF_CloseFont(gFont);
 	gFont = nullptr;
 
@@ -119,19 +138,12 @@ bool LoadMedia(const char* path)
 {
 	bool sucess = true;
 
-	gFont = TTF_OpenFont(path, 28);
-	if (gFont == nullptr)
-	{
-		printf("Could not load font: %s", TTF_GetError());
-	}
-	else
-	{
-		SDL_Color color = {0,0,0};
-		if (!gTextureFont.loadFromRenderedFont(gRenderer, gFont, "The quick brown fox jumps over the lazy dog", color))
-		{
-			printf("Could not load texture: %s", SDL_GetError());
-		}
-	}
+	gKeyboardTexture.loadFromFile(gRenderer, path);
+
+	gArraySides[0].loadFromFile(gRenderer,"F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\assets\\up.bmp");
+	gArraySides[1].loadFromFile(gRenderer,"F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\assets\\down.bmp");
+	gArraySides[2].loadFromFile(gRenderer,"F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\assets\\left.bmp");
+	gArraySides[3].loadFromFile(gRenderer,"F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\assets\\right.bmp");
 	
 
 	return sucess;
