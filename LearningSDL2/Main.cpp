@@ -14,9 +14,12 @@ TTF_Font* gFont = nullptr;
 
 bool LoadMedia(const char* path);
 void close();
-LTexture gKeyboardTexture;
-LTexture gArraySides[4];
 
+const int DEAD_ZONE_CONTROLLER = 8000;
+SDL_Joystick* gFirstGameController = nullptr;
+
+
+LTexture gArrow;
 
 int main(int argc, char* argv[])
 {
@@ -24,7 +27,7 @@ int main(int argc, char* argv[])
 	{
 		WindowHardware* window = nullptr;
 
-		int statusCodeInit = SDL_Init(SDL_INIT_VIDEO);
+		int statusCodeInit = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
 		int statusCodeTTFInit = TTF_Init();
 		
 		if (statusCodeTTFInit == -1)
@@ -48,16 +51,36 @@ int main(int argc, char* argv[])
 				// TODO: ERROR
 			}
 
+			if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1"))
+			{
+				printf("Warning : Linear texture filtering not enabled.");
+			}
+
+			// Check if there's a joystick connected
+			if (SDL_NumJoysticks() < 1)
+			{
+				printf("Warning: No joystick connected!\n");
+			}
+			else
+			{
+				gFirstGameController = SDL_JoystickOpen(0);
+				if (gFirstGameController == nullptr)
+				{
+					printf("Error: Could not open joystick - %s\n", SDL_GetError());
+				}
+			}
+
+
+
 			// Set SDL_Renderer background color to white.
 			SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-
-			LoadMedia("F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\assets\\preview.png");
+			LoadMedia("F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\assets\\arrow.png");
 
 			bool quit = false;
 			SDL_Event e;
 
-			LTexture* currentTexture = nullptr;
-			SDL_Rect clip = { 0, 0, xWindow, yWindow };
+			int xDir = 0;
+			int yDir = 0;
 
 			while (!quit)
 			{
@@ -67,37 +90,59 @@ int main(int argc, char* argv[])
 					{
 						quit = true;
 					}
+					else if (e.type == SDL_JOYAXISMOTION)
+					{
+						// Verify which controller is.
+						if (e.jaxis.which == 0)
+						{
+							// X axis motion
+							if (e.jaxis.axis == 0)
+							{
+								if (e.jaxis.value < -DEAD_ZONE_CONTROLLER)
+								{
+									xDir = -1;
+								}
+								else if (e.jaxis.value > DEAD_ZONE_CONTROLLER)
+								{
+									xDir = 1;
+								}
+								else 
+								{
+									xDir = 0;
+								}
+							}
+							// Y axis motion
+							else if (e.jaxis.axis == 1)
+							{
+								if (e.jaxis.value < -DEAD_ZONE_CONTROLLER)
+								{
+									yDir = -1;
+								}
+								else if (e.jaxis.value > DEAD_ZONE_CONTROLLER)
+								{
+									yDir = 1;
+								}
+								else
+								{
+									yDir = 0;
+								}
+							}
+						}
+					}
 				}
 
-				// Key States
-				const Uint8* currentKeyStates = SDL_GetKeyboardState(nullptr);
-				if (currentKeyStates[SDL_SCANCODE_UP])
-				{
-					currentTexture = &gArraySides[0];
-				}
-				else if (currentKeyStates[SDL_SCANCODE_DOWN])
-				{
-					currentTexture = &gArraySides[1];
-				}
-				else if (currentKeyStates[SDL_SCANCODE_LEFT])
-				{
-					currentTexture = &gArraySides[2];
-				}
-				else if (currentKeyStates[SDL_SCANCODE_RIGHT])
-				{
-					currentTexture = &gArraySides[3];
-				}
-				else 
-				{
-					currentTexture = &gKeyboardTexture;
-				}
-
-
-				
 				SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 				SDL_RenderClear(gRenderer);
 
-				currentTexture->render(gRenderer, 0, 0, &clip);
+				double joystickAngle = atan2((double)yDir, (double)xDir) * (180.0 / M_PI);
+
+				if (xDir == 0 && yDir == 0)
+				{
+					joystickAngle = 0;
+				}
+
+
+				gArrow.render(gRenderer, (xWindow - gArrow.getWidth() ) / 2, (yWindow - gArrow.getHeight()) / 2, nullptr, joystickAngle);
 
 				SDL_RenderPresent(gRenderer);
 			}
@@ -120,6 +165,12 @@ int main(int argc, char* argv[])
 }
 
 void close() {
+
+	gArrow.free();
+
+	SDL_JoystickClose(gFirstGameController);
+	gFirstGameController = nullptr;
+
 	TTF_CloseFont(gFont);
 	gFont = nullptr;
 
@@ -138,13 +189,7 @@ bool LoadMedia(const char* path)
 {
 	bool sucess = true;
 
-	gKeyboardTexture.loadFromFile(gRenderer, path);
-
-	gArraySides[0].loadFromFile(gRenderer,"F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\assets\\up.bmp");
-	gArraySides[1].loadFromFile(gRenderer,"F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\assets\\down.bmp");
-	gArraySides[2].loadFromFile(gRenderer,"F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\assets\\left.bmp");
-	gArraySides[3].loadFromFile(gRenderer,"F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\assets\\right.bmp");
-	
+	gArrow.loadFromFile(gRenderer, path);
 
 	return sucess;
 }
