@@ -1,2 +1,2 @@
-# SDL2.LazyFoo
+# SDL2 - LazyFoo
 Learning SDL2 on LazyFoo's website
