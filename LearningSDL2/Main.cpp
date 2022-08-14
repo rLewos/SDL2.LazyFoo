@@ -150,61 +150,18 @@ int main(int argc, char* argv[])
 								printf("Warning: %s", SDL_GetError());
 							}
 						}
-					}
-
-					//else if (e.type == SDL_JOYAXISMOTION)
-					//{
-					//	// Verify which controller is.
-					//	if (e.jaxis.which == 0)
-					//	{
-					//		// X axis motion
-					//		if (e.jaxis.axis == 0)
-					//		{
-					//			if (e.jaxis.value < -DEAD_ZONE_CONTROLLER)
-					//			{
-					//				xDir = -1;
-					//			}
-					//			else if (e.jaxis.value > DEAD_ZONE_CONTROLLER)
-					//			{
-					//				xDir = 1;
-					//			}
-					//			else
-					//			{
-					//				xDir = 0;
-					//			}
-					//		}
-					//		// Y axis motion
-					//		else if (e.jaxis.axis == 1)
-					//		{
-					//			if (e.jaxis.value < -DEAD_ZONE_CONTROLLER)
-					//			{
-					//				yDir = -1;
-					//			}
-					//			else if (e.jaxis.value > DEAD_ZONE_CONTROLLER)
-					//			{
-					//				yDir = 1;
-					//			}
-					//			else
-					//			{
-					//				yDir = 0;
-					//			}
-					//		}
-					//	}
+						else if (gHaptic != nullptr)
+						{
+							if (SDL_HapticRumblePlay(gHaptic, 0.75, 500) != 0)
+							{
+								printf("Warning: %s", SDL_GetError());
+							}
+						}
 					}
 				}
 
 				SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 				SDL_RenderClear(gRenderer);
-
-				double joystickAngle = atan2((double)yDir, (double)xDir) * (180.0 / M_PI);
-
-				if (xDir == 0 && yDir == 0)
-				{
-					joystickAngle = 0;
-				}
-
-
-				gArrow.render(gRenderer, (xWindow - gArrow.getWidth()) / 2, (yWindow - gArrow.getHeight()) / 2, nullptr, joystickAngle);
 
 				SDL_RenderPresent(gRenderer);
 			}
