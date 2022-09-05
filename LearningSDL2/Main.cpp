@@ -14,9 +14,17 @@ TTF_Font* gFont = nullptr;
 
 bool LoadMedia(const char* path);
 void close();
-LTexture gKeyboardTexture;
-LTexture gArraySides[4];
 
+const int DEAD_ZONE_CONTROLLER = 8000;
+
+SDL_GameController* gGameController = nullptr;
+
+// Old way with Haptic
+SDL_Joystick* gJoystick = nullptr;
+SDL_Haptic* gHaptic = nullptr;
+
+
+LTexture gArrow;
 
 int main(int argc, char* argv[])
 {
@@ -24,9 +32,9 @@ int main(int argc, char* argv[])
 	{
 		WindowHardware* window = nullptr;
 
-		int statusCodeInit = SDL_Init(SDL_INIT_VIDEO);
+		int statusCodeInit = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC);
 		int statusCodeTTFInit = TTF_Init();
-		
+
 		if (statusCodeTTFInit == -1)
 		{
 			printf("Could not initialize TTF: %s", TTF_GetError());
@@ -48,16 +56,81 @@ int main(int argc, char* argv[])
 				// TODO: ERROR
 			}
 
+			if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1"))
+			{
+				printf("Warning : Linear texture filtering not enabled.");
+			}
+
+			// Check if there's a joystick connected
+			if (SDL_NumJoysticks() < 1)
+			{
+				printf("Warning: No joystick connected!\n");
+			}
+			else
+			{
+				if (!SDL_IsGameController(0))
+				{
+					printf("Warning: Joystick not compatible with GameController. %s", SDL_GetError());
+				}
+				else
+				{
+					gGameController = SDL_GameControllerOpen(0);
+					if (!SDL_GameControllerHasRumble(gGameController))
+					{
+						printf("Warning: Controller doesn't have rumbles. %s", SDL_GetError());
+					}
+				}
+
+				if (gGameController == nullptr)
+				{
+					gJoystick = SDL_JoystickOpen(0);
+					if (gJoystick == nullptr)
+					{
+						printf("Warning: Could not load Joystick - %s", SDL_GetError());
+					}
+					else
+					{
+						if (!SDL_JoystickIsHaptic(gJoystick))
+						{
+							printf("Warning: %s", SDL_GetError());
+						}
+						else
+						{
+							// Get joystick haptic device
+							gHaptic = SDL_HapticOpenFromJoystick(gJoystick);
+							if (gHaptic == nullptr)
+							{
+								printf("Warning: %s", SDL_GetError());
+							}
+							else
+							{
+								// Initialize rumble
+								if (SDL_HapticRumbleInit(gHaptic) < 0)
+								{
+									printf("Warning: %s", SDL_GetError());
+								}
+							}
+						}
+					}
+
+				}
+
+
+
+
+
+			}
+
+
 			// Set SDL_Renderer background color to white.
 			SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-
-			LoadMedia("F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\assets\\preview.png");
+			LoadMedia("F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\assets\\arrow.png");
 
 			bool quit = false;
 			SDL_Event e;
 
-			LTexture* currentTexture = nullptr;
-			SDL_Rect clip = { 0, 0, xWindow, yWindow };
+			int xDir = 0;
+			int yDir = 0;
 
 			while (!quit)
 			{
@@ -67,46 +140,37 @@ int main(int argc, char* argv[])
 					{
 						quit = true;
 					}
+					else if (e.type == SDL_JOYBUTTONDOWN)
+					{
+						if (gGameController != nullptr)
+						{
+							// Vibrate controller
+							if (SDL_GameControllerRumble(gGameController, 0xFFFF * 3 /4, 0xFFFF * 3/4, 500) < 0)
+							{
+								printf("Warning: %s", SDL_GetError());
+							}
+						}
+						else if (gHaptic != nullptr)
+						{
+							if (SDL_HapticRumblePlay(gHaptic, 0.75, 500) != 0)
+							{
+								printf("Warning: %s", SDL_GetError());
+							}
+						}
+					}
 				}
 
-				// Key States
-				const Uint8* currentKeyStates = SDL_GetKeyboardState(nullptr);
-				if (currentKeyStates[SDL_SCANCODE_UP])
-				{
-					currentTexture = &gArraySides[0];
-				}
-				else if (currentKeyStates[SDL_SCANCODE_DOWN])
-				{
-					currentTexture = &gArraySides[1];
-				}
-				else if (currentKeyStates[SDL_SCANCODE_LEFT])
-				{
-					currentTexture = &gArraySides[2];
-				}
-				else if (currentKeyStates[SDL_SCANCODE_RIGHT])
-				{
-					currentTexture = &gArraySides[3];
-				}
-				else 
-				{
-					currentTexture = &gKeyboardTexture;
-				}
-
-
-				
 				SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 				SDL_RenderClear(gRenderer);
-
-				currentTexture->render(gRenderer, 0, 0, &clip);
 
 				SDL_RenderPresent(gRenderer);
 			}
 
-			
+
 		}
 		else
 		{
-			
+
 		}
 	}
 	catch (const std::exception& e)
@@ -120,6 +184,30 @@ int main(int argc, char* argv[])
 }
 
 void close() {
+
+	gArrow.free();
+
+	if (gGameController != nullptr)
+	{
+		SDL_GameControllerClose(gGameController);
+	}
+
+	if (gJoystick != nullptr)
+	{
+		SDL_JoystickClose(gJoystick);
+	}
+
+	if (gHaptic != nullptr)
+	{
+		SDL_HapticClose(gHaptic);
+	}
+
+	gGameController = nullptr;
+	gJoystick = nullptr;
+	gHaptic = nullptr;
+
+
+
 	TTF_CloseFont(gFont);
 	gFont = nullptr;
 
@@ -138,13 +226,7 @@ bool LoadMedia(const char* path)
 {
 	bool sucess = true;
 
-	gKeyboardTexture.loadFromFile(gRenderer, path);
-
-	gArraySides[0].loadFromFile(gRenderer,"F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\assets\\up.bmp");
-	gArraySides[1].loadFromFile(gRenderer,"F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\assets\\down.bmp");
-	gArraySides[2].loadFromFile(gRenderer,"F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\assets\\left.bmp");
-	gArraySides[3].loadFromFile(gRenderer,"F:\\# Repositorios\\SDL2.LazyFoo\\LearningSDL2\\x64\\Debug\\assets\\right.bmp");
-	
+	gArrow.loadFromFile(gRenderer, path);
 
 	return sucess;
 }
